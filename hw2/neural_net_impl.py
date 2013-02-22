@@ -1,6 +1,7 @@
 from neural_net import NeuralNetwork, NetworkFramework
 from neural_net import Node, Target, Input
 import random
+import Queue
 
 
 # <--- Problem 3, Question 1 --->
@@ -42,7 +43,25 @@ def FeedForward(network, input):
   # 1) Assign input values to input nodes
   # 2) Propagates to hidden layer
   # 3) Propagates to the output layer
+
+  nodes = Queue.queue
+  for i in len(network.inputs):
+    network.inputs[i].raw_value = input[i]
+    nodes.put(network.inputs[i])
+
+  while not nodes.empty:
+    node = nodes.get()
+    node.raw_value += node.fixed_weight
+    node.transformed_value = activation_function(value)
+
+    for i in len(nodes.forward_neighbors):
+      nodes.forward_neighbors[i] += nodes.transformed_value*nodes.forward_weights[i]
+      nodes.put(nodes.forward_neighbors[i])
+
   pass
+
+def activation_function(value):
+  return 1.0/(1.0 + math.e**(-1.0*value))
 
 #< --- Problem 3, Question 2
 
