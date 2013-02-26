@@ -44,7 +44,7 @@ def FeedForward(network, input):
   # 2) Propagates to hidden layer
   # 3) Propagates to the output layer
 
-  nodes = Queue.Queue
+  nodes = Queue.Queue(0)
 
   # assign input values to input nodes
   for i in range(len(network.inputs)):
@@ -117,14 +117,14 @@ def Backprop(network, input, target, learning_rate):
   FeedForward(network, input)
 
   # calculate errors and deltas for the last layer
-  nodes = Queue.queue
-  for m in len(target):
+  nodes = Queue.Queue(0)
+  for m in range(len(target)):
     a_m = network.outputs[m].transformed_value
     network.outputs[m].error = target[m] - a_m
-    network.outputs[m].delta = error*a_m*(1-a_m)
+    network.outputs[m].delta = network.outputs[m].error*a_m*(1-a_m)
 
     # place the parent nodes in a queue
-    for j in len(network.outputs[m].inputs):
+    for j in range(len(network.outputs[m].inputs)):
       nodes.put(network.outputs[m].inputs[j])
   
   # calculate errors and deltas for hidden nodes
@@ -172,7 +172,7 @@ def Train(network, inputs, targets, learning_rate, epochs):
   network.CheckComplete()
 
   for i in range(epochs):
-    for j in len(inputs):
+    for j in range(len(inputs)):
       Backprop(network, inputs[j], targets[j], learning_rate)
 
   pass
@@ -342,12 +342,14 @@ class SimpleNetwork(EncodedNetworkFramework):
 
     # input nodes  
     for i in range(196):
-      node = Node()
-      self.network.AddNode(node, NeuralNetwork.INPUT)
+      input_node = Node()
+      self.network.AddNode(input_node, NeuralNetwork.INPUT)
 
       # link it to each output node
-      for node in self.network.outputs:
-        node.AddInput(node, None, self.network)    
+      for forward_node in self.network.outputs:
+        forward_node.AddInput(input_node, None, self.network) 
+
+    self.network.CheckComplete()   
 
 
 #<---- Problem 3, Question 7 --->

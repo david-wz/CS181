@@ -50,7 +50,6 @@ def main():
     assert len(image.pixels[0]) == 14
 
   # Initializing network
-
   if networkType == 'simple':
     network = SimpleNetwork()
   if networkType == 'hidden':
