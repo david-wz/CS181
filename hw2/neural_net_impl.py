@@ -1,5 +1,6 @@
 from neural_net import NeuralNetwork, NetworkFramework
 from neural_net import Node, Target, Input
+import time
 import random
 import Queue
 
@@ -44,28 +45,20 @@ def FeedForward(network, input):
   # 2) Propagates to hidden layer
   # 3) Propagates to the output layer
 
-  nodes = Queue.Queue(0)
-
   # assign input values to input nodes
-  for i in range(len(network.inputs)):
-    network.inputs[i].raw_value = input[i]
-    nodes.put(network.inputs[i])
+  for i, input_node in enumerate(network.inputs):
+    input_node.transformed_value = input[i]
 
-  # add the fixed weight and use activation function
-  while not nodes.empty:
-    node = nodes.get()
-    node.raw_value += node.fixed_weight
-    node.transformed_value = activation_function(value)
+  # assign values to hidden layer
+  for hidden_node in network.hidden_nodes:
+    hidden_node.raw_value = network.ComputeRawValue(hidden_node)
+    hidden_node.transformed_value = network.Sigmoid(hidden_node.raw_value)
 
-    # change child nodes
-    for i in range(len(node.forward_neighbors)):
-      node.forward_neighbors[i] += node.transformed_value*node.forward_weights[i]
-      nodes.put(nodes.forward_neighbors[i])
+  # finish output layer
+  for output_node in network.outputs:
+    output_node.raw_value = network.ComputeRawValue(output_node)
+    output_node.transformed_value = network.Sigmoid(output_node.raw_value)
 
-  pass
-
-def activation_function(value):
-  return 1.0/(1.0 + math.e**(-1.0*value))
 
 #< --- Problem 3, Question 2
 
@@ -116,38 +109,40 @@ def Backprop(network, input, target, learning_rate):
   
   FeedForward(network, input)
 
-  # calculate errors and deltas for the last layer
-  nodes = Queue.Queue(0)
-  for m in range(len(target)):
-    a_m = network.outputs[m].transformed_value
-    network.outputs[m].error = target[m] - a_m
-    network.outputs[m].delta = network.outputs[m].error*a_m*(1-a_m)
+  # output layer
+  for m, output_node in enumerate(network.outputs):     
+    a_m = output_node.transformed_value
+    output_node.error = target[m] - a_m
+    output_node.delta = output_node.error*a_m*(1-a_m)
 
-    # place the parent nodes in a queue
-    for j in range(len(network.outputs[m].inputs)):
-      nodes.put(network.outputs[m].inputs[j])
-  
-  # calculate errors and deltas for hidden nodes
-  while not nodes.empty:
-    node = nodes.get() 
+  # hidden layer first, then input layer 
+  for node in reversed(network.hidden_nodes):
     error = 0.0
-    for j in len(node.inputs):
-      error += node.forward_weights[j]*node.forward_neighbors[j].delta
+    for j in range(len(node.forward_neighbors)):
+      error += node.forward_weights[j].value*node.forward_neighbors[j].delta
     node.error = error
-
     a_m = node.transformed_value
-    node.delta = error*a_m*(1-a_m)  
-    
+    node.delta = error*a_m*(1-a_m) 
+
     # change forward weights
-    for j in len(node.forward_weights):
+    for j in range(len(node.forward_weights)):
       node.forward_weights[j].value += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
 
-    # place the parent nodes in a queue
-    for j in len(node.inputs):
-      nodes.put(node.inputs[j])  
-      
-  pass
+  # same code again
+  for node in network.inputs:
+    error = 0.0
+    for j in range(len(node.forward_neighbors)):
+      error += node.forward_weights[j].value*node.forward_neighbors[j].delta
+    node.error = error
+    a_m = node.transformed_value
+    node.delta = error*a_m*(1-a_m) 
 
+    # change forward weights
+    for j in range(len(node.forward_weights)):
+      node.forward_weights[j].value += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
+    
+
+      
 # <--- Problem 3, Question 3 --->
 
 def Train(network, inputs, targets, learning_rate, epochs):
@@ -172,12 +167,13 @@ def Train(network, inputs, targets, learning_rate, epochs):
   network.CheckComplete()
 
   for i in range(epochs):
+    print "Epoch: ", i
+    start = time.time()
     for j in range(len(inputs)):
       Backprop(network, inputs[j], targets[j], learning_rate)
-
-  pass
+    end = time.time()
+    print "Time: ", end - start  
   
-
 
 # <--- Problem 3, Question 4 --->
 
@@ -332,6 +328,8 @@ class SimpleNetwork(EncodedNetworkFramework):
     
     # 1) Adds an input node for each pixel.    
     # 2) Add an output node for each possible digit label.
+    print "Creating SimpleNetwork..."
+
     self.network = NeuralNetwork()
 
     # add output nodes
@@ -349,6 +347,7 @@ class SimpleNetwork(EncodedNetworkFramework):
       for forward_node in self.network.outputs:
         forward_node.AddInput(input_node, None, self.network) 
 
+    print "Done Creating SimpleNetwork!"
     self.network.CheckComplete()   
 
 
