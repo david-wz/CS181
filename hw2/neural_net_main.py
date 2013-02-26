@@ -8,7 +8,7 @@ import random
 def parseArgs(args):
   """Parses arguments vector, looking for switches of the form -key {optional value}.
   For example:
-    parseArgs([ 'main.py', '-e', 20, '-r', 0.1, '-m', 'Simple' ]) = { '-e':20, '-r':5, '-t': 'simple' }"""
+    parseArgs([ 'main.py', '-e', 20, '-r', 0.1, '-t', 'Simple' ]) = { '-e':20, '-r':5, '-t': 'simple' }"""
   args_map = {}
   curkey = None
   for i in xrange(1, len(args)):

@@ -44,10 +44,10 @@ def FeedForward(network, input):
   # 2) Propagates to hidden layer
   # 3) Propagates to the output layer
 
-  nodes = Queue.queue
+  nodes = Queue.Queue
 
   # assign input values to input nodes
-  for i in len(network.inputs):
+  for i in range(len(network.inputs)):
     network.inputs[i].raw_value = input[i]
     nodes.put(network.inputs[i])
 
@@ -58,7 +58,7 @@ def FeedForward(network, input):
     node.transformed_value = activation_function(value)
 
     # change child nodes
-    for i in len(node.forward_neighbors):
+    for i in range(len(node.forward_neighbors)):
       node.forward_neighbors[i] += node.transformed_value*node.forward_weights[i]
       nodes.put(nodes.forward_neighbors[i])
 
@@ -173,7 +173,7 @@ def Train(network, inputs, targets, learning_rate, epochs):
 
   for i in range(epochs):
     for j in len(inputs):
-      Backprop(network, inputs[j], targets[j], learning_rate):
+      Backprop(network, inputs[j], targets[j], learning_rate)
 
   pass
   
@@ -276,8 +276,8 @@ class EncodedNetworkFramework(NetworkFramework):
 
     # Replace line below by content of function
     pixels = [0.0]*(14*14)
-    for i in len(image.pixels):
-      for j in len(image.pixels[i]):
+    for i in range(len(image.pixels)):
+      for j in range(len(image.pixels[i])):
         pixels[14*i+j] = image.pixels[i][j]/256.0
 
     return pixels      
@@ -303,8 +303,8 @@ class EncodedNetworkFramework(NetworkFramework):
     
     """
     random.seed()
-    for value in self.network.weights.value
-      value = random.uniform(-.01, .01)
+    for weights in self.network.weights:
+      weights.value = random.uniform(-.01, .01)
     pass
 
 
@@ -332,22 +332,22 @@ class SimpleNetwork(EncodedNetworkFramework):
     
     # 1) Adds an input node for each pixel.    
     # 2) Add an output node for each possible digit label.
-    network = NeuralNetwork()
+    self.network = NeuralNetwork()
 
     # add output nodes
     for i in range(10):
       node = Node()
       # change fixed weight?
-      network.AddNode(node, OUTPUT)
+      self.network.AddNode(node, NeuralNetwork.OUTPUT)
 
     # input nodes  
     for i in range(196):
       node = Node()
-      network.AddNode(node, INPUT)
+      self.network.AddNode(node, NeuralNetwork.INPUT)
 
       # link it to each output node
-      for node in network.outputs:
-        node.AddInput(node, network)    
+      for node in self.network.outputs:
+        node.AddInput(node, None, self.network)    
 
 
 #<---- Problem 3, Question 7 --->
