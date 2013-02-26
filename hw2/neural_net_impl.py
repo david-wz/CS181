@@ -45,17 +45,21 @@ def FeedForward(network, input):
   # 3) Propagates to the output layer
 
   nodes = Queue.queue
+
+  # assign input values to input nodes
   for i in len(network.inputs):
     network.inputs[i].raw_value = input[i]
     nodes.put(network.inputs[i])
 
+  # add the fixed weight and use activation function
   while not nodes.empty:
     node = nodes.get()
     node.raw_value += node.fixed_weight
     node.transformed_value = activation_function(value)
 
-    for i in len(nodes.forward_neighbors):
-      nodes.forward_neighbors[i] += nodes.transformed_value*nodes.forward_weights[i]
+    # change child nodes
+    for i in len(node.forward_neighbors):
+      node.forward_neighbors[i] += node.transformed_value*node.forward_weights[i]
       nodes.put(nodes.forward_neighbors[i])
 
   pass
@@ -109,6 +113,39 @@ def Backprop(network, input, target, learning_rate):
   # 1) We first propagate the input through the network
   # 2) Then we compute the errors and update the weigths starting with the last layer
   # 3) We now propagate the errors to the hidden layer, and update the weights there too
+  
+  FeedForward(network, input)
+
+  # calculate errors and deltas for the last layer
+  nodes = Queue.queue
+  for m in len(target):
+    a_m = network.outputs[m].transformed_value
+    network.outputs[m].error = target[m] - a_m
+    network.outputs[m].delta = error*a_m*(1-a_m)
+
+    # place the parent nodes in a queue
+    for j in len(network.outputs[m].inputs):
+      nodes.put(network.outputs[m].inputs[j])
+  
+  # calculate errors and deltas for hidden nodes
+  while not nodes.empty:
+    node = nodes.get() 
+    error = 0.0
+    for j in len(node.inputs):
+      error += node.forward_weights[j]*node.forward_neighbors[j].delta
+    node.error = error
+
+    a_m = node.transformed_value
+    node.delta = error*a_m*(1-a_m)  
+    
+    # change forward weights
+    for j in len(node.forward_weights):
+      node.forward_weights[j] += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
+
+    # place the parent nodes in a queue
+    for j in len(node.inputs):
+      nodes.put(node.inputs[j])  
+      
   pass
 
 # <--- Problem 3, Question 3 --->
@@ -133,6 +170,11 @@ def Train(network, inputs, targets, learning_rate, epochs):
   run the *Backprop* over the training set *epochs*-times
   """
   network.CheckComplete()
+
+  for i in range(epochs):
+    for j in len(inputs):
+      Backprop(network, inputs[j], targets[j], learning_rate):
+
   pass
   
 
