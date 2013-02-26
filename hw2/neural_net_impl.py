@@ -140,7 +140,7 @@ def Backprop(network, input, target, learning_rate):
     
     # change forward weights
     for j in len(node.forward_weights):
-      node.forward_weights[j] += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
+      node.forward_weights[j].value += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
 
     # place the parent nodes in a queue
     for j in len(node.inputs):
@@ -217,7 +217,9 @@ class EncodedNetworkFramework(NetworkFramework):
     
     """
     # Replace line below by content of function
-    raise NotImplementedError
+    encoding = [0.0]*10
+    encoding[label] = 1.0
+    return encoding
 
   def GetNetworkLabel(self):
     """
@@ -247,7 +249,8 @@ class EncodedNetworkFramework(NetworkFramework):
     
     """
     # Replace line below by content of function
-    raise NotImplementedError
+    encoding = map(lambda node: node.transformed_value, self.network.outputs)
+    return encoding.index(max(encoding))
 
   def Convert(self, image):
     """
@@ -270,8 +273,14 @@ class EncodedNetworkFramework(NetworkFramework):
     value should be 1).
     
     """
+
     # Replace line below by content of function
-    raise NotImplementedError
+    pixels = [0.0]*(14*14)
+    for i in len(image.pixels):
+      for j in len(image.pixels[i]):
+        pixels[14*i+j] = image.pixels[i][j]/256.0
+
+    return pixels      
 
   def InitializeWeights(self):
     """
@@ -293,7 +302,9 @@ class EncodedNetworkFramework(NetworkFramework):
     of self.network.
     
     """
-    # replace line below by content of function
+    random.seed()
+    for value in self.network.weights.value
+      value = random.uniform(-.01, .01)
     pass
 
 
@@ -321,7 +332,22 @@ class SimpleNetwork(EncodedNetworkFramework):
     
     # 1) Adds an input node for each pixel.    
     # 2) Add an output node for each possible digit label.
-    pass
+    network = NeuralNetwork()
+
+    # add output nodes
+    for i in range(10):
+      node = Node()
+      # change fixed weight?
+      network.AddNode(node, OUTPUT)
+
+    # input nodes  
+    for i in range(196):
+      node = Node()
+      network.AddNode(node, INPUT)
+
+      # link it to each output node
+      for node in network.outputs:
+        node.AddInput(node, network)    
 
 
 #<---- Problem 3, Question 7 --->
