@@ -210,7 +210,9 @@ class NetworkFramework(object):
       self.TrainFn(self.network, inputs, targets, learning_rate, 1)
 
       # Print out the current training and validation performance.
+      print "training set!"
       perf_train = self.Performance(images)
+      print "validation set!"
       perf_validate = self.Performance(validation_images)
       print '%d Performance: %.8f %.3f' % (
         i + 1, perf_train, perf_validate)

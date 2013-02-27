@@ -131,7 +131,7 @@ def Backprop(network, input, target, learning_rate):
 
     # change forward weights
     for j in range(len(node.forward_weights)):
-      node.forward_weights[j].value += learning_rate*node.transformed_value*node.forward_neighbors[j].delta
+      node.forward_weights[j].value += learning_rate*a_m*node.forward_neighbors[j].delta
 
   # same code again for inputs
   for node in network.inputs:
@@ -144,7 +144,7 @@ def Backprop(network, input, target, learning_rate):
 
     # change forward weights
     for j in range(len(node.forward_weights)):
-      node.forward_weights[j].value += learning_rate*node.transformed_value*node.forward_neighbors[j].delta
+      node.forward_weights[j].value += learning_rate*a_m*node.forward_neighbors[j].delta
     
       
 # <--- Problem 3, Question 3 --->
@@ -175,7 +175,7 @@ def Train(network, inputs, targets, learning_rate, epochs):
     for j in range(len(inputs)):
       Backprop(network, inputs[j], targets[j], learning_rate)
     end = time.time()
-    print "Time: ", end - start  
+    # print "Time: ", end - start  
   
 
 # <--- Problem 3, Question 4 --->
