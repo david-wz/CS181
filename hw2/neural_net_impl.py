@@ -5,6 +5,13 @@ import random
 import Queue
 
 
+def PrintNetwork(network):
+  
+  print "Input 1 Weight 1: ", network.inputs[0].forward_weights[0].value 
+  if len(network.hidden_nodes) > 0:
+    print "Hidden 1 Forward Weight 1: ", network.hidden_nodes[0].forward_weights[0].value
+
+
 # <--- Problem 3, Question 1 --->
 
 def FeedForward(network, input):
@@ -58,7 +65,6 @@ def FeedForward(network, input):
   for output_node in network.outputs:
     output_node.raw_value = network.ComputeRawValue(output_node)
     output_node.transformed_value = network.Sigmoid(output_node.raw_value)
-
 
 #< --- Problem 3, Question 2
 
@@ -141,7 +147,7 @@ def Backprop(network, input, target, learning_rate):
     for j in range(len(node.forward_weights)):
       node.forward_weights[j].value += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
     
-
+  PrintNetwork(network) 
       
 # <--- Problem 3, Question 3 --->
 
@@ -167,7 +173,6 @@ def Train(network, inputs, targets, learning_rate, epochs):
   network.CheckComplete()
 
   for i in range(epochs):
-    print "Epoch: ", i
     start = time.time()
     for j in range(len(inputs)):
       Backprop(network, inputs[j], targets[j], learning_rate)
@@ -303,8 +308,6 @@ class EncodedNetworkFramework(NetworkFramework):
       weights.value = random.uniform(-.01, .01)
     pass
 
-
-
 #<--- Problem 3, Question 6 --->
 
 class SimpleNetwork(EncodedNetworkFramework):
@@ -332,23 +335,23 @@ class SimpleNetwork(EncodedNetworkFramework):
 
     self.network = NeuralNetwork()
 
-    # add output nodes
-    for i in range(10):
-      node = Node()
-      # change fixed weight?
-      self.network.AddNode(node, NeuralNetwork.OUTPUT)
-
     # input nodes  
     for i in range(196):
       input_node = Node()
       self.network.AddNode(input_node, NeuralNetwork.INPUT)
 
-      # link it to each output node
-      for forward_node in self.network.outputs:
-        forward_node.AddInput(input_node, None, self.network) 
+    # add output nodes
+    for i in range(10):
+      node = Node()
+
+      # link inputs to outputs
+      for input_node in self.network.inputs:
+        node.AddInput(input_node, None, self.network)
+
+      self.network.AddNode(node, NeuralNetwork.OUTPUT)
 
     print "Done Creating SimpleNetwork!"
-    self.network.CheckComplete()   
+    self.network.CheckComplete()  
 
 
 #<---- Problem 3, Question 7 --->
@@ -378,7 +381,34 @@ class HiddenNetwork(EncodedNetworkFramework):
     # 1) Adds an input node for each pixel
     # 2) Adds the hidden layer
     # 3) Adds an output node for each possible digit label.
-    pass
+
+    self.network = NeuralNetwork()
+
+    #input nodes
+    for i in range(196):
+      input_node = Node()
+      self.network.AddNode(input_node, NeuralNetwork.INPUT)
+
+    #hidden nodes
+    for i in range(number_of_hidden_nodes):
+      hidden_node = Node()
+
+      for input_node in self.network.inputs:
+        hidden_node.AddInput(input_node, None, self.network)
+
+      self.network.AddNode(hidden_node, NeuralNetwork.HIDDEN)
+
+    #output nodes
+    for i in range(10):
+      output_node = Node()
+
+      for hidden_node in self.network.hidden_nodes:
+        output_node.AddInput(hidden_node, None, self.network)
+
+      self.network.AddNode(output_node, NeuralNetwork.OUTPUT)
+
+    print "Done Creating HiddenNetwork!"
+    self.network.CheckComplete() 
     
 
 #<--- Problem 3, Question 8 ---> 
