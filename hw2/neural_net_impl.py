@@ -118,36 +118,34 @@ def Backprop(network, input, target, learning_rate):
   # output layer
   for m, output_node in enumerate(network.outputs):     
     a_m = output_node.transformed_value
-    output_node.error = target[m] - a_m
-    output_node.delta = output_node.error*a_m*(1-a_m)
+    output_node.delta = (target[m] - a_m)*a_m*(1.0-a_m)
 
   # hidden layer first, then input layer 
   for node in reversed(network.hidden_nodes):
     error = 0.0
     for j in range(len(node.forward_neighbors)):
       error += node.forward_weights[j].value*node.forward_neighbors[j].delta
-    node.error = error
+
     a_m = node.transformed_value
     node.delta = error*a_m*(1-a_m) 
 
     # change forward weights
     for j in range(len(node.forward_weights)):
-      node.forward_weights[j].value += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
+      node.forward_weights[j].value += learning_rate*node.transformed_value*node.forward_neighbors[j].delta
 
-  # same code again
+  # same code again for inputs
   for node in network.inputs:
     error = 0.0
     for j in range(len(node.forward_neighbors)):
       error += node.forward_weights[j].value*node.forward_neighbors[j].delta
-    node.error = error
+
     a_m = node.transformed_value
     node.delta = error*a_m*(1-a_m) 
 
     # change forward weights
     for j in range(len(node.forward_weights)):
-      node.forward_weights[j].value += learning_rate*node.delta*node.forward_neighbors[j].transformed_value
+      node.forward_weights[j].value += learning_rate*node.transformed_value*node.forward_neighbors[j].delta
     
-  PrintNetwork(network) 
       
 # <--- Problem 3, Question 3 --->
 
@@ -306,7 +304,7 @@ class EncodedNetworkFramework(NetworkFramework):
     random.seed()
     for weights in self.network.weights:
       weights.value = random.uniform(-.01, .01)
-    pass
+
 
 #<--- Problem 3, Question 6 --->
 
@@ -381,6 +379,7 @@ class HiddenNetwork(EncodedNetworkFramework):
     # 1) Adds an input node for each pixel
     # 2) Adds the hidden layer
     # 3) Adds an output node for each possible digit label.
+    print "Creating HiddenNetwork..."
 
     self.network = NeuralNetwork()
 
@@ -414,7 +413,7 @@ class HiddenNetwork(EncodedNetworkFramework):
 #<--- Problem 3, Question 8 ---> 
 
 class CustomNetwork(EncodedNetworkFramework):
-  def __init__(self):
+  def __init__(self, number_of_hidden_nodes=10):
     """
     Arguments:
     ---------
@@ -429,4 +428,47 @@ class CustomNetwork(EncodedNetworkFramework):
     Surprise me!
     """
     super(CustomNetwork, self).__init__() # <Don't remove this line>
-    pass
+    print "Creating CustomNetwork..."
+
+    self.network = NeuralNetwork()
+
+    #input nodes
+    for i in range(196):
+      input_node = Node()
+      self.network.AddNode(input_node, NeuralNetwork.INPUT)
+
+    #first layer hidden nodes
+    first_hidden = []
+    for i in range(number_of_hidden_nodes):
+      hidden_node = Node()
+
+      for input_node in self.network.inputs:
+        hidden_node.AddInput(input_node, None, self.network)
+
+      self.network.AddNode(hidden_node, NeuralNetwork.HIDDEN)
+      first_hidden.append(hidden_node)
+
+    #second layer hidden nodes
+    second_hidden = []
+    for i in range(number_of_hidden_nodes):
+      hidden_node = Node()
+
+      for input_node in first_hidden:
+        hidden_node.AddInput(input_node, None, self.network)
+
+      self.network.AddNode(hidden_node, NeuralNetwork.HIDDEN)
+      second_hidden.append(hidden_node)
+
+    #output nodes
+    for i in range(10):
+      output_node = Node()
+
+      for hidden_node in second_hidden:
+        output_node.AddInput(hidden_node, None, self.network)
+
+      self.network.AddNode(output_node, NeuralNetwork.OUTPUT)
+
+    print "Done Creating CustomNetwork!"
+    self.network.CheckComplete() 
+
+
