@@ -60,7 +60,7 @@ def FeedForward(network, input):
   for hidden_node in network.hidden_nodes:
     hidden_node.raw_value = network.ComputeRawValue(hidden_node)
     hidden_node.transformed_value = network.Sigmoid(hidden_node.raw_value)
-
+    
   # finish output layer
   for output_node in network.outputs:
     output_node.raw_value = network.ComputeRawValue(output_node)
@@ -118,7 +118,7 @@ def Backprop(network, input, target, learning_rate):
   # output layer
   for m, output_node in enumerate(network.outputs):     
     a_m = output_node.transformed_value
-    output_node.delta = (target[m] - a_m)*a_m*(1.0-a_m)
+    output_node.delta = (target[m] - a_m)*network.SigmoidPrime(a_m)
 
   # hidden layer first, then input layer 
   for node in reversed(network.hidden_nodes):
@@ -127,7 +127,7 @@ def Backprop(network, input, target, learning_rate):
       error += node.forward_weights[j].value*node.forward_neighbors[j].delta
 
     a_m = node.transformed_value
-    node.delta = error*a_m*(1-a_m) 
+    node.delta = error*network.SigmoidPrime(a_m) 
 
     # change forward weights
     for j in range(len(node.forward_weights)):
@@ -139,13 +139,11 @@ def Backprop(network, input, target, learning_rate):
     for j in range(len(node.forward_neighbors)):
       error += node.forward_weights[j].value*node.forward_neighbors[j].delta
 
-    a_m = node.transformed_value
-    node.delta = error*a_m*(1-a_m) 
+    a_m = node.transformed_value 
 
     # change forward weights
     for j in range(len(node.forward_weights)):
       node.forward_weights[j].value += learning_rate*a_m*node.forward_neighbors[j].delta
-    
       
 # <--- Problem 3, Question 3 --->
 
@@ -413,7 +411,7 @@ class HiddenNetwork(EncodedNetworkFramework):
 #<--- Problem 3, Question 8 ---> 
 
 class CustomNetwork(EncodedNetworkFramework):
-  def __init__(self, number_of_hidden_nodes=10):
+  def __init__(self, number_of_hidden_nodes=5):
     """
     Arguments:
     ---------
@@ -438,7 +436,6 @@ class CustomNetwork(EncodedNetworkFramework):
       self.network.AddNode(input_node, NeuralNetwork.INPUT)
 
     #first layer hidden nodes
-    first_hidden = []
     for i in range(number_of_hidden_nodes):
       hidden_node = Node()
 
@@ -446,24 +443,12 @@ class CustomNetwork(EncodedNetworkFramework):
         hidden_node.AddInput(input_node, None, self.network)
 
       self.network.AddNode(hidden_node, NeuralNetwork.HIDDEN)
-      first_hidden.append(hidden_node)
-
-    #second layer hidden nodes
-    second_hidden = []
-    for i in range(number_of_hidden_nodes):
-      hidden_node = Node()
-
-      for input_node in first_hidden:
-        hidden_node.AddInput(input_node, None, self.network)
-
-      self.network.AddNode(hidden_node, NeuralNetwork.HIDDEN)
-      second_hidden.append(hidden_node)
 
     #output nodes
     for i in range(10):
       output_node = Node()
 
-      for hidden_node in second_hidden:
+      for hidden_node in self.network.hidden_nodes:
         output_node.AddInput(hidden_node, None, self.network)
 
       self.network.AddNode(output_node, NeuralNetwork.OUTPUT)

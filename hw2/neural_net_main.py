@@ -80,7 +80,7 @@ def main():
           len(network.network.outputs)))
   print '* * * * * * * * *'
   # Train the network.
-  network.Train(images, validation, test, rate, epochs)
+  network.Train(images, validation, test, rate, epochs, True)
 
 if __name__ == "__main__":
   main()

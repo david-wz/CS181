@@ -190,7 +190,7 @@ class NetworkFramework(object):
         correct += 1
     return correct * 1.0 / len(images)
 
-  def Train(self, images, validation_images, test_images, learning_rate, epochs):
+  def Train(self, images, validation_images, test_images, learning_rate, epochs, changing_rate):
 
     # Convert the images and labels into a format the network can understand.
     inputs = []
@@ -200,14 +200,18 @@ class NetworkFramework(object):
       targets.append(self.EncodeLabel(image.label))
 
     # Initializes performance log
-    # performance_log = []
-    # performance_log.append((self.Performance(images), self.Performance(validation_images), self.Performance(test_images)))
+    performance_log = []
+    performance_log.append((self.Performance(images), self.Performance(validation_images), self.Performance(test_images)))
     
     # Loop through the specified number of training epochs.
     for i in range(epochs):
 
       # This calls your function in neural_net_impl.py.
-      self.TrainFn(self.network, inputs, targets, learning_rate, 1)
+
+      if changing_rate:
+        self.TrainFn(self.network, inputs, targets, learning_rate*(epochs-i)/epochs, 1)
+      else:
+        self.TrainFn(self.network, inputs, targets, learning_rate, 1)
 
       # Print out the current training and validation performance.
       # print "training set!"
@@ -220,8 +224,13 @@ class NetworkFramework(object):
         i + 1, perf_train, perf_validate, perf_test)
 
       # updates log
-      # performance_log.append((perf_train, perf_validate, perf_test))
-    #return(performance_log)
+      performance_log.append((perf_train, perf_validate, perf_test))
+
+      # terminal condition
+      if i > 3 and performance_log[i-3][1] >= perf_validate:
+        break
+
+    return(performance_log)
 
   def RegisterFeedForwardFunction(self, fn):
     self.FeedForwardFn = fn
